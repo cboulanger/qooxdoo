@@ -1,0 +1,50 @@
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - "*"
+jobs:
+  provide_repository_names:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: octokit/graphql-action@v2.x
+        id: get_repo_names
+        with:
+          query: |
+            query getRepoNames($queryString: String!) {
+              search(query: $queryString, type: REPOSITORY, first: 100) {
+                repositoryCount
+                edges {
+                  node {
+                    ... on Repository {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          queryString: "org:qooxdoo"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          TAG=$(echo $GITHUB_REF | cut -d / -f 3)
+          echo ::set-output name=tag::${TAG}
+          echo "tag: $TAG, data: ${{ steps.get_repo_names.outputs.data }}"
+    outputs:
+      matrix: ${{ steps.get_repo_names.outputs.data }}
+
+  dispatch:
+#    if: github.event.base_ref == 'refs/heads/master'
+    strategy:
+      matrix:
+        repo: ${{ fromJson(needs.provide_repository_names.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPOSITORY_DISPATCH }}
+          repository: ${{ matrix.repo }}
+          event-type: push-tag
+          client-payload: ${{ needs.provide_repository_names.outputs.tag }}
