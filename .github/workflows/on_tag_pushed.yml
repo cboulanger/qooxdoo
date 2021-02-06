@@ -12,8 +12,8 @@ jobs:
         id: get_repo_names
         with:
           query: |
-            query getRepoNames($queryString: String!) {
-              search(query: $queryString, type: REPOSITORY, first: 100) {
+            query getRepoNames() {
+              search(query: "org:qooxdoo", type: REPOSITORY, first: 100) {
                 repositoryCount
                 edges {
                   node {
@@ -24,7 +24,6 @@ jobs:
                 }
               }
             }
-          queryString: "org:qooxdoo"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
