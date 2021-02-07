@@ -8,37 +8,34 @@ jobs:
   provide_repository_names:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-node@v2
       - uses: octokit/graphql-action@v2.x
         id: get_repo_names
         with:
           query: |
-            query getRepoNames {
-              search(query: "org:qooxdoo", type: REPOSITORY, first: 100) {
-                repositoryCount
-                edges {
-                  node {
-                    ... on Repository {
-                      name
-                    }
-                  }
-                }
-              }
-            }
+            query { search(query: "org:qooxdoo", type: REPOSITORY, first: 100) {
+              edges { node { ... on Repository { name } } }
+            } }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
-          TAG=$(echo $GITHUB_REF | cut -d / -f 3)
-          echo "Query:"
-          echo ::set-output name=tag::${TAG}
-          echo "tag: $TAG, data: ${{ steps.get_repo_names.outputs.data }}"
+      - id: get_tag_name
+        run: echo "::set-output name=tag::$(echo $GITHUB_REF | cut -d / -f 3)"
+      - id: transform
+        run: |
+          DATA=$(node -e "let d=${{ steps.get_repo_names.outputs.data }}; console.log(d.data.search.edges.map(node=>node.name));")
+          echo "::set-output name=repos::$DATA"
+
     outputs:
-      matrix: ${{ steps.get_repo_names.outputs.data }}
+      repos: ${{ steps.get_repo_names.outputs.repos }}
+      tag: ${{ steps.get_tag_name.outputs.tag }}
+
+
 
   dispatch:
 #    if: github.event.base_ref == 'refs/heads/master'
     strategy:
       matrix:
-        repo: ${{ fromJson(needs.provide_repository_names.outputs.matrix) }}
+        repo: ${{ fromJson(needs.provide_repository_names.outputs.repos) }}
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
