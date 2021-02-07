@@ -22,10 +22,10 @@ jobs:
         run: echo "::set-output name=tag::$(echo $GITHUB_REF | cut -d / -f 3)"
       - id: transform
         run: |
-          DATA=$(node <<HEREDOC
+          DATA=$(node <<-HEREDOC
           let d=${{ steps.get_repo_names.outputs.data }}
-          console.log(d.search.edges.map(node=>node.name));
-          HEREDOC)
+          console.log(d.search.edges.map(item=>item.node.name));
+          HEREDOC )
           echo "::set-output name=repos::$DATA"
 
     outputs:
