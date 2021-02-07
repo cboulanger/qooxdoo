@@ -41,7 +41,6 @@ jobs:
           echo "repos: ${{ needs.provide_repository_names.outputs.repos }}"
           echo "tag: ${{ needs.provide_repository_names.outputs.tag }}"
 
-
   dispatch:
     needs:
       - provide_repository_names
@@ -55,6 +54,6 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPOSITORY_DISPATCH }}
-          repository: ${{ matrix.repo }}
+          repository: qooxdoo/${{ matrix.repo }}
           event-type: push-tag
-          client-payload: ${{ needs.provide_repository_names.outputs.tag }}
+          client-payload: "${{ needs.provide_repository_names.outputs.tag }}"
