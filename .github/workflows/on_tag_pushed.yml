@@ -56,4 +56,4 @@ jobs:
           token: ${{ secrets.REPOSITORY_DISPATCH }}
           repository: ${{ github.repository_owner }}/${{ matrix.repo }}
           event-type: "push-tag"
-          client-payload: "${{ needs.provide_repository_names.outputs.tag }}"
+          client-payload: ${{ toJson(needs.provide_repository_names.outputs.tag) }}
