@@ -25,15 +25,21 @@ jobs:
           node << HEREDOC > data.json
           let d=${{ steps.get_repo_names.outputs.data }}
           d = d.search.edges.map(item=>item.node.name);
-          console.log(d);
           console.log(JSON.stringify(d,null,0));
           HEREDOC
           echo "::set-output name=repos::$(cat data.json)"
-
     outputs:
       repos: ${{ steps.get_repo_names.outputs.repos }}
       tag: ${{ steps.get_tag_name.outputs.tag }}
 
+  debug:
+    runs-on: ubuntu-latest
+    needs:
+      - provide_repository_names
+    steps:
+      - run: |
+          echo "repos: ${{ jobs.provide_repository_names.outputs.repos }}"
+          echo "tag: ${{ jobs.provide_repository_names.outputs.tag }}"
 
 
   dispatch:
