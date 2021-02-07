@@ -13,7 +13,7 @@ jobs:
         id: get_repo_names
         with:
           query: |
-            query { search(query: "org:qooxdoo", type: REPOSITORY, first: 100) {
+            query { search(query: "org:${{ github.repository_owner }}", type: REPOSITORY, first: 100) {
               edges { node { ... on Repository { name } } }
             } }
         env:
@@ -55,5 +55,5 @@ jobs:
         with:
           token: ${{ secrets.REPOSITORY_DISPATCH }}
           repository: qooxdoo/${{ matrix.repo }}
-          event-type: push-tag
+          event-type: "push-tag"
           client-payload: "${{ needs.provide_repository_names.outputs.tag }}"
