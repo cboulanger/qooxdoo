@@ -38,12 +38,14 @@ jobs:
       - provide_repository_names
     steps:
       - run: |
-          echo "repos: ${{ jobs.provide_repository_names.outputs.repos }}"
-          echo "tag: ${{ jobs.provide_repository_names.outputs.tag }}"
+          echo "repos: ${{ needs.provide_repository_names.outputs.repos }}"
+          echo "tag: ${{ needs.provide_repository_names.outputs.tag }}"
 
 
   dispatch:
-#    if: github.event.base_ref == 'refs/heads/master'
+    needs:
+      - provide_repository_names
+    #    if: github.event.base_ref == 'refs/heads/master'
     strategy:
       matrix:
         repo: ${{ fromJson(needs.provide_repository_names.outputs.repos) }}
